@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Barangay Solo Parent Information System</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            primary: { 50: '#eff6ff', 100: '#dbeafe', 200: '#bfdbfe', 300: '#93c5fd', 400: '#60a5fa', 500: '#3b82f6', 600: '#2563eb', 700: '#1d4ed8', 800: '#1e40af', 900: '#1e3a8a' },
+            secondary: { 50: '#fefce8', 100: '#fef9c3', 200: '#fef08a', 300: '#fde047', 400: '#facc15', 500: '#eab308', 600: '#ca8a04', 700: '#a16207' }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Inter', system-ui, sans-serif; }
+    .card { background: white; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); padding: 24px; transition: all 0.3s; }
+    .card:hover { box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1); }
+    .btn-primary { background: #2563eb; color: white; padding: 10px 24px; border-radius: 8px; font-weight: 500; transition: all 0.2s; }
+    .btn-primary:hover { background: #1d4ed8; box-shadow: 0 4px 12px rgba(37,99,235,0.3); }
+    .btn-secondary { background: #eab308; color: white; padding: 10px 24px; border-radius: 8px; font-weight: 500; transition: all 0.2s; }
+    .btn-secondary:hover { background: #ca8a04; }
+    .btn-outline { border: 2px solid #2563eb; color: #2563eb; padding: 10px 24px; border-radius: 8px; font-weight: 500; transition: all 0.2s; }
+    .btn-outline:hover { background: #2563eb; color: white; }
+    .input-field { width: 100%; padding: 10px 16px; border: 1px solid #d1d5db; border-radius: 8px; outline: none; transition: all 0.2s; }
+    .input-field:focus { border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59,130,246,0.1); }
+    .animate-fade-in { animation: fadeIn 0.5s ease-out; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    .animate-slide-up { animation: slideUp 0.5s ease-out; }
+    @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+  </style>
+</head>
+<body class="bg-gray-50">
+  <div id="app"></div>
+  <script type="module" src="/src/components/App.js"></script>
+</body>
+</html>
