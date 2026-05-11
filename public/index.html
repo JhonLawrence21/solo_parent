@@ -67,12 +67,37 @@
       },
       applicants: {
         create: (data) => api.request('/applicants', { method: 'POST', body: JSON.stringify(data) }),
-        getAll: () => api.request('/applicants')
+        getAll: () => api.request('/applicants'),
+        getOne: (id) => api.request('/applicants/' + id)
       },
       admin: {
         updateStatus: (id, data) => api.request('/admin/applicants/' + id + '/status', { method: 'PUT', body: JSON.stringify(data) })
       },
       dashboard: { getStats: () => api.request('/dashboard') }
+    };
+
+    const exportToCSV = (applicants, filename = 'applicants.csv') => {
+      const headers = ['ID', 'Application Type', 'ID Number', 'Expiry Date', 'Last Name', 'First Name', 'Middle Name', 'Age', 'Sex', 'Birthdate', 'Birth Place', 'Address', 'Contact Number', 'Civil Status', 'Number of Dependents', 'Facebook Account', 'Educational Attainment', 'Purpose of Application', 'Employment Type', 'Type of Employment', 'Other Source of Income', 'Total Monthly Income', 'Type of Occupancy', 'Classification', '4P\'s', 'IP\'s', 'PhilHealth', 'SSS', 'GSIS', 'PAG-IBIG', 'COMELEC Registered', 'Guardian Name', 'Guardian Relation', 'Guardian Contact', 'Zone Leader Name', 'Zone Leader Contact', 'Status', 'Date Applied'];
+      const rows = applicants.map(app => [
+        app.id, app.application_type, app.id_number || '', app.expiry_date || '', app.last_name || '', app.first_name || '', app.middle_name || '', app.age || '', app.sex || '', app.birthdate || '', app.birth_place || '', app.address || '', app.contact_number || '', app.civil_status || '', app.number_of_dependents || '', app.facebook_account || '', app.educational_attainment || '', app.purpose_of_application || '', app.employment_type || '', app.type_of_employment || '', app.other_source_of_income || '', app.total_monthly_income || '', app.type_of_occupancy || '', app.classification || '', app.member_4ps ? 'Yes' : 'No', app.member_ip ? 'Yes' : 'No', app.member_philhealth ? 'Yes' : 'No', app.member_sss ? 'Yes' : 'No', app.member_gsis ? 'Yes' : 'No', app.member_pagibig ? 'Yes' : 'No', app.comelec_registered === true || app.comelec_registered === 'Yes' ? 'Yes' : 'No', app.guardian_name || '', app.guardian_relation || '', app.guardian_contact || '', app.zone_leader_name || '', app.zone_leader_contact || '', app.status || '', app.created_at ? new Date(app.created_at).toLocaleDateString() : ''
+      ].map(v => '"' + String(v).replace(/"/g, '""') + '"').join(','));
+      const csv = [headers.join(','), ...rows].join('\n');
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = filename;
+      link.click();
+    };
+
+    const safeText = (v) => {
+      if (v === null || v === undefined) return '';
+      if (typeof v === 'boolean') return v ? 'Yes' : 'No';
+      return String(v);
+    };
+
+    const boolPill = (v) => {
+      const on = !!v;
+      return html`<span class="px-2 py-1 rounded-full text-xs font-medium ${on ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'}">${on ? 'Yes' : 'No'}</span>`;
     };
 
     const Navbar = ({ user, onLogout }) => {
@@ -258,10 +283,11 @@
 
     const Apply = ({ onLogout }) => {
       const [form, setForm] = useState({
-        application_type: 'new', last_name: '', first_name: '', middle_name: '', age: '', sex: '', birthdate: '',
-        birth_place: '', address: '', contact_number: '', civil_status: '', number_of_dependents: 0,
-        educational_attainment: 'None', purpose_of_application: '', employment_type: 'Unemployed',
-        total_monthly_income: 0, type_of_occupancy: 'Own House', classification: '',
+        application_type: 'new', id_number: '', expiry_date: '', last_name: '', first_name: '', middle_name: '',
+        age: '', sex: '', birthdate: '', birth_place: '', address: '', contact_number: '', civil_status: '',
+        number_of_dependents: 0, facebook_account: '', educational_attainment: 'None',
+        purpose_of_application: '', employment_type: 'Unemployed', type_of_employment: '',
+        other_source_of_income: '', total_monthly_income: 0, type_of_occupancy: 'Own House', classification: '',
         member_4ps: false, member_ip: false, member_philhealth: false, member_sss: false, member_gsis: false,
         member_pagibig: false, comelec_registered: 'No', guardian_name: '', guardian_relation: '',
         guardian_contact: '', zone_leader_name: '', zone_leader_contact: ''
@@ -329,6 +355,14 @@
                     </select>
                   </div>
                   <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">ID Number</label>
+                    <input value="${form.id_number}" onInput="${e => setField('id_number', e.target.value)}" class="input-field" placeholder="Auto-generated" />
+                  </div>
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Expiry Date</label>
+                    <input type="date" value="${form.expiry_date}" onInput="${e => setField('expiry_date', e.target.value)}" class="input-field" />
+                  </div>
+                  <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Last Name *</label>
                     <input value="${form.last_name}" onInput="${e => setField('last_name', e.target.value)}" class="input-field" required />
                   </div>
@@ -364,6 +398,10 @@
                     <label class="block text-sm font-medium text-gray-700 mb-1">Contact Number *</label>
                     <input value="${form.contact_number}" onInput="${e => setField('contact_number', e.target.value)}" class="input-field" required />
                   </div>
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Facebook Account</label>
+                    <input value="${form.facebook_account}" onInput="${e => setField('facebook_account', e.target.value)}" class="input-field" placeholder="facebook.com/username" />
+                  </div>
                 </div>
                 <div class="mt-4">
                   <label class="block text-sm font-medium text-gray-700 mb-1">Address *</label>
@@ -380,6 +418,24 @@
                       <option value="Others">Others</option>
                     </select>
                   </div>
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Number of Dependents</label>
+                    <input type="number" value="${form.number_of_dependents}" onInput="${e => setField('number_of_dependents', e.target.value)}" class="input-field" min="0" />
+                  </div>
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Educational Attainment</label>
+                    <select value="${form.educational_attainment}" onChange="${e => setField('educational_attainment', e.target.value)}" class="input-field">
+                      <option value="None">None</option>
+                      <option value="Elementary">Elementary</option>
+                      <option value="High School">High School</option>
+                      <option value="College">College</option>
+                      <option value="Vocational">Vocational</option>
+                      <option value="Masteral">Masteral</option>
+                      <option value="Doctorate">Doctorate</option>
+                    </select>
+                  </div>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
                   <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Classification *</label>
                     <select value="${form.classification}" onChange="${e => setField('classification', e.target.value)}" class="input-field" required>
@@ -403,12 +459,19 @@
                       <option value="Others">Others</option>
                     </select>
                   </div>
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">COMELEC Registered</label>
+                    <select value="${form.comelec_registered}" onChange="${e => setField('comelec_registered', e.target.value)}" class="input-field">
+                      <option value="No">No</option>
+                      <option value="Yes">Yes</option>
+                    </select>
+                  </div>
                 </div>
               </div>
 
               <div class="bg-white rounded-xl shadow p-4 md:p-6">
                 <h2 class="text-base md:text-lg font-bold mb-3 md:mb-4 border-b pb-2">Employment</h2>
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Employment Type</label>
                     <select value="${form.employment_type}" onChange="${e => setField('employment_type', e.target.value)}" class="input-field">
@@ -419,15 +482,24 @@
                     </select>
                   </div>
                   <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Monthly Income</label>
-                    <input type="number" value="${form.total_monthly_income}" onInput="${e => setField('total_monthly_income', e.target.value)}" class="input-field" />
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Type of Employment</label>
+                    <input value="${form.type_of_employment}" onInput="${e => setField('type_of_employment', e.target.value)}" class="input-field" placeholder="e.g., Full-time, Part-time, Contract" />
                   </div>
                   <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Occupancy</label>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Other Source of Income</label>
+                    <input value="${form.other_source_of_income}" onInput="${e => setField('other_source_of_income', e.target.value)}" class="input-field" placeholder="e.g., Rental, Business" />
+                  </div>
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Total Monthly Income (PHP)</label>
+                    <input type="number" value="${form.total_monthly_income}" onInput="${e => setField('total_monthly_income', e.target.value)}" class="input-field" min="0" />
+                  </div>
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Type of Occupancy</label>
                     <select value="${form.type_of_occupancy}" onChange="${e => setField('type_of_occupancy', e.target.value)}" class="input-field">
                       <option value="Own House">Own House</option>
                       <option value="Renter">Renter</option>
                       <option value="Living with Parents">Living with Parents</option>
+                      <option value="Homeless">Homeless</option>
                     </select>
                   </div>
                 </div>
@@ -520,6 +592,10 @@
         }
       };
 
+      const handleExport = () => {
+        exportToCSV(applicants, 'solo_parent_applicants.csv');
+      };
+
       return html`
         <div class="min-h-screen bg-gray-50">
           <header class="bg-white shadow-sm px-3 md:px-6 py-3 md:py-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
@@ -537,7 +613,10 @@
                 `)}
               </div>
               <div class="bg-white rounded-xl shadow p-3 md:p-6">
-                <h3 class="font-bold mb-3 md:mb-4 text-sm md:text-base">All Applications</h3>
+                <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-3 md:mb-4">
+                  <h3 class="font-bold text-sm md:text-base">All Applications</h3>
+                  <button onClick="${handleExport}" class="bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-green-700">Export CSV</button>
+                </div>
                 <div class="overflow-x-auto">
                   <table class="w-full text-left text-xs md:text-sm">
                     <thead class="bg-gray-50">
@@ -559,6 +638,7 @@
                             <span class="px-1.5 md:px-2 py-0.5 md:py-1 rounded-full text-xs font-medium ${app.status === 'approved' ? 'bg-green-100 text-green-700' : app.status === 'pending' ? 'bg-yellow-100 text-yellow-700' : 'bg-red-100 text-red-700'}">${app.status}</span>
                           </td>
                           <td class="py-2 px-1 md:px-2">
+                            <a href="/admin/applicants/${app.id}" class="text-blue-600 hover:text-blue-700 text-xs md:text-sm mr-1 md:mr-2">View</a>
                             <button onClick="${() => updateStatus(app.id, 'approved')}" class="text-green-600 hover:text-green-700 text-xs md:text-sm mr-1 md:mr-2">✓</button>
                             <button onClick="${() => updateStatus(app.id, 'rejected')}" class="text-red-600 hover:text-red-700 text-xs md:text-sm">✗</button>
                           </td>
@@ -574,6 +654,171 @@
         </div>
       `;
     };
+
+    const ApplicantDetails = () => {
+      const [applicant, setApplicant] = useState(null);
+      const [familyMembers, setFamilyMembers] = useState([]);
+      const [loading, setLoading] = useState(true);
+      const [error, setError] = useState('');
+
+      const id = window.location.pathname.split('/').pop();
+
+      useEffect(() => {
+        api.applicants.getOne(id).then(data => {
+          setApplicant(data);
+          setFamilyMembers(data.family_members || []);
+          setLoading(false);
+        }).catch(e => {
+          setError(e.message || 'Failed to load applicant');
+          setLoading(false);
+        });
+      }, [id]);
+
+      if (loading) {
+        return html`<div class="min-h-screen flex items-center justify-center"><div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div></div>`;
+      }
+
+      if (error) {
+        return html`
+          <div class="min-h-screen bg-gray-50 p-6">
+            <div class="max-w-4xl mx-auto bg-white rounded-xl shadow p-6">
+              <div class="text-red-600 font-medium mb-4">${error}</div>
+              <a href="/dashboard" class="text-blue-600 hover:text-blue-700">Back to Dashboard</a>
+            </div>
+          </div>
+        `;
+      }
+
+      if (!applicant) {
+        return html`
+          <div class="min-h-screen bg-gray-50 p-6">
+            <div class="max-w-4xl mx-auto bg-white rounded-xl shadow p-6">
+              <div class="text-gray-600">Applicant not found.</div>
+              <a href="/dashboard" class="text-blue-600 hover:text-blue-700">Back to Dashboard</a>
+            </div>
+          </div>
+        `;
+      }
+
+      const Field = ({ label, value }) => html`
+        <div>
+          <div class="text-xs uppercase tracking-wide text-gray-500">${label}</div>
+          <div class="mt-1 text-sm text-gray-900 break-words">${safeText(value) || '-'}</div>
+        </div>
+      `;
+
+      return html`
+        <div class="min-h-screen bg-gray-50 p-3 md:p-6">
+          <div class="max-w-4xl mx-auto space-y-6">
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+              <div>
+                <h1 class="text-xl md:text-2xl font-bold text-gray-800">Applicant Details</h1>
+                <p class="text-gray-600 text-sm">${applicant.last_name}, ${applicant.first_name} ${applicant.middle_name || ''}</p>
+              </div>
+              <a href="/dashboard" class="text-blue-600 hover:text-blue-700 text-sm">← Back to Dashboard</a>
+            </div>
+
+            <div class="bg-white rounded-xl shadow p-4 md:p-6">
+              <h2 class="text-base md:text-lg font-bold text-gray-800 mb-3 md:mb-4 border-b pb-2">Application Summary</h2>
+              <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                <Field label="Application Type" value={applicant.application_type} />
+                <Field label="ID Number" value={applicant.id_number} />
+                <Field label="Expiry Date" value={applicant.expiry_date} />
+                <Field label="Age" value={applicant.age} />
+                <Field label="Sex" value={applicant.sex} />
+                <Field label="Civil Status" value={applicant.civil_status} />
+                <Field label="Classification" value={applicant.classification} />
+                <Field label="Purpose" value={applicant.purpose_of_application} />
+                <Field label="Status" value={applicant.status} />
+              </div>
+            </div>
+
+            <div class="bg-white rounded-xl shadow p-4 md:p-6">
+              <h2 class="text-base md:text-lg font-bold text-gray-800 mb-3 md:mb-4 border-b pb-2">Personal Information</h2>
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <Field label="Last Name" value={applicant.last_name} />
+                <Field label="First Name" value={applicant.first_name} />
+                <Field label="Middle Name" value={applicant.middle_name} />
+                <Field label="Birthdate" value={applicant.birthdate ? new Date(applicant.birthdate).toLocaleDateString() : ''} />
+                <Field label="Birth Place" value={applicant.birth_place} />
+                <Field label="Address" value={applicant.address} />
+                <Field label="Contact Number" value={applicant.contact_number} />
+                <Field label="Facebook Account" value={applicant.facebook_account} />
+                <Field label="Number of Dependents" value={applicant.number_of_dependents} />
+                <Field label="Educational Attainment" value={applicant.educational_attainment} />
+              </div>
+            </div>
+
+            <div class="bg-white rounded-xl shadow p-4 md:p-6">
+              <h2 class="text-base md:text-lg font-bold text-gray-800 mb-3 md:mb-4 border-b pb-2">Employment</h2>
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <Field label="Employment Type" value={applicant.employment_type} />
+                <Field label="Type of Employment" value={applicant.type_of_employment} />
+                <Field label="Other Source of Income" value={applicant.other_source_of_income} />
+                <Field label="Total Monthly Income" value={applicant.total_monthly_income ? 'PHP ' + applicant.total_monthly_income : ''} />
+                <Field label="Type of Occupancy" value={applicant.type_of_occupancy} />
+              </div>
+            </div>
+
+            <div class="bg-white rounded-xl shadow p-4 md:p-6">
+              <h2 class="text-base md:text-lg font-bold text-gray-800 mb-3 md:mb-4 border-b pb-2">Memberships</h2>
+              <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+                <div><div class="text-xs uppercase tracking-wide text-gray-500">4P's</div>${boolPill(applicant.member_4ps)}</div>
+                <div><div class="text-xs uppercase tracking-wide text-gray-500">IP's</div>${boolPill(applicant.member_ip)}</div>
+                <div><div class="text-xs uppercase tracking-wide text-gray-500">PhilHealth</div>${boolPill(applicant.member_philhealth)}</div>
+                <div><div class="text-xs uppercase tracking-wide text-gray-500">SSS</div>${boolPill(applicant.member_sss)}</div>
+                <div><div class="text-xs uppercase tracking-wide text-gray-500">GSIS</div>${boolPill(applicant.member_gsis)}</div>
+                <div><div class="text-xs uppercase tracking-wide text-gray-500">PAG-IBIG</div>${boolPill(applicant.member_pagibig)}</div>
+                <div class="col-span-2 sm:col-span-3 md:col-span-4"><div class="text-xs uppercase tracking-wide text-gray-500">COMELEC Registered</div>${boolPill(applicant.comelec_registered === 'Yes' || applicant.comelec_registered === true)}</div>
+              </div>
+            </div>
+
+            <div class="bg-white rounded-xl shadow p-4 md:p-6">
+              <h2 class="text-base md:text-lg font-bold text-gray-800 mb-3 md:mb-4 border-b pb-2">Guardian / Zone Leader</h2>
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <Field label="Guardian Name" value={applicant.guardian_name} />
+                <Field label="Guardian Relation" value={applicant.guardian_relation} />
+                <Field label="Guardian Contact" value={applicant.guardian_contact} />
+                <Field label="Zone Leader Name" value={applicant.zone_leader_name} />
+                <Field label="Zone Leader Contact" value={applicant.zone_leader_contact} />
+              </div>
+            </div>
+
+            <div class="bg-white rounded-xl shadow p-4 md:p-6">
+              <h2 class="text-base md:text-lg font-bold text-gray-800 mb-3 md:mb-4 border-b pb-2">Family Composition</h2>
+              ${familyMembers.length === 0 ? html`<div class="text-gray-500 text-sm">No family members added.</div>` : html`
+                <div class="overflow-x-auto">
+                  <table class="w-full text-xs md:text-sm">
+                    <thead class="bg-gray-50">
+                      <tr class="text-left">
+                        <th class="px-2 py-2">#</th>
+                        <th class="px-2 py-2">Name</th>
+                        <th class="px-2 py-2">Relation</th>
+                        <th class="px-2 py-2">Age</th>
+                        <th class="px-2 py-2">Occupation</th>
+                      </tr>
+                    </thead>
+                    <tbody class="divide-y">
+                      ${familyMembers.map((m, i) => html`
+                        <tr>
+                          <td class="px-2 py-2 text-gray-600">${i + 1}</td>
+                          <td class="px-2 py-2">${safeText(m.name)}</td>
+                          <td class="px-2 py-2">${safeText(m.relation)}</td>
+                          <td class="px-2 py-2">${safeText(m.age)}</td>
+                          <td class="px-2 py-2">${safeText(m.occupation)}</td>
+                        </tr>
+                      `)}
+                    </tbody>
+                  </table>
+                </div>
+              `}
+            </div>
+          </div>
+        </div>
+      `;
+    };
+
+    const App = () => {
 
     const App = () => {
       const [user, setUser] = useState(null);
@@ -602,6 +847,7 @@
       if (path === '/register') return html`<${Register} />`;
       if (path === '/apply') return html`<${Apply} onLogout="${logout}" />`;
       if (path === '/dashboard') return html`<${Dashboard} />`;
+      if (path.startsWith('/admin/applicants/')) return html`<${ApplicantDetails} />`;
       return html`<${Home} user="${user}" onLogout="${logout}" />`;
     };
 
