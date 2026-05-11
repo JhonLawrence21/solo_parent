@@ -1,72 +1,29 @@
-{
-  "resources": [
-    {
-      "kind": "psql",
-      "spec": {
-        "name": "solo-parent-db",
-        "region": "oregon",
-        "plan": "starter"
-      }
-    },
-    {
-      "kind": "web",
-      "spec": {
-        "name": "solo-parent-api",
-        "region": "oregon",
-        "plan": "free",
-        "buildCommand": "npm install",
-        "startCommand": "npm start",
-        "healthCheckPath": "/api/health",
-        "envVars": [
-          {
-            "key": "NODE_ENV",
-            "value": "production"
-          },
-          {
-            "key": "DB_HOST",
-            "fromDatabase": {
-              "name": "solo-parent-db",
-              "envVarKey": "DB_HOST"
-            }
-          },
-          {
-            "key": "DB_PORT",
-            "fromDatabase": {
-              "name": "solo-parent-db",
-              "envVarKey": "DB_PORT"
-            }
-          },
-          {
-            "key": "DB_USER",
-            "fromDatabase": {
-              "name": "solo-parent-db",
-              "envVarKey": "DB_USER"
-            }
-          },
-          {
-            "key": "DB_PASSWORD",
-            "fromDatabase": {
-              "name": "solo-parent-db",
-              "envVarKey": "DB_PASSWORD"
-            }
-          },
-          {
-            "key": "DB_NAME",
-            "fromDatabase": {
-              "name": "solo-parent-db",
-              "envVarKey": "DB_NAME"
-            }
-          },
-          {
-            "key": "DB_SSL",
-            "value": "true"
-          },
-          {
-            "key": "JWT_SECRET",
-            "generateValue": true
-          }
-        ]
-      }
-    }
-  ]
-}
+database:
+  name: solo-parent-db
+  region: oregon
+  plan: starter
+
+services:
+  - name: solo-parent-api
+    region: oregon
+    plan: free
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DB_HOST
+        sync: false
+      - key: DB_PORT
+        value: "5432"
+      - key: DB_USER
+        sync: false
+      - key: DB_PASSWORD
+        sync: false
+      - key: DB_NAME
+        value: solo_parent_system
+      - key: DB_SSL
+        value: "true"
+      - key: JWT_SECRET
+        generateValue: true
