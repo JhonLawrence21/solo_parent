@@ -1,49 +1,27 @@
-{
-  "database": {
-    "type": "psql",
-    "name": "solo-parent-db",
-    "databaseName": "solo_parent_system",
-    "plan": "starter",
-    "region": "oregon"
-  },
-  "service": {
-    "type": "web",
-    "name": "solo-parent-api",
-    "envVars": [
-      {
-        "key": "NODE_ENV",
-        "value": "production"
-      },
-      {
-        "key": "DB_HOST"
-      },
-      {
-        "key": "DB_PORT",
-        "value": "5432"
-      },
-      {
-        "key": "DB_USER"
-      },
-      {
-        "key": "DB_PASSWORD"
-      },
-      {
-        "key": "DB_NAME",
-        "value": "solo_parent_system"
-      },
-      {
-        "key": "DB_SSL",
-        "value": "true"
-      },
-      {
-        "key": "JWT_SECRET",
-        "generateValue": true
-      }
-    ],
-    "region": "oregon",
-    "plan": "free",
-    "buildCommand": "npm install",
-    "startCommand": "npm start",
-    "healthCheckPath": "/api/health"
-  }
-}
+database:
+  name: solo-parent-db
+  databaseName: solo_parent_system
+  plan: starter
+  region: oregon
+
+service:
+  name: solo-parent-api
+  region: oregon
+  plan: free
+  buildCommand: npm install
+  startCommand: npm start
+  healthCheckPath: /api/health
+  envVars:
+    - key: NODE_ENV
+      value: production
+    - key: DB_HOST
+    - key: DB_PORT
+      value: "5432"
+    - key: DB_USER
+    - key: DB_PASSWORD
+    - key: DB_NAME
+      value: solo_parent_system
+    - key: DB_SSL
+      value: "true"
+    - key: JWT_SECRET
+      generateValue: true
