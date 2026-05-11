@@ -5,13 +5,41 @@ const Apply = () => {
   const [loading, setLoading] = useState(false);
   const [familyMembers, setFamilyMembers] = useState([{ name: '', relation: '', age: '', occupation: '' }]);
   const [formData, setFormData] = useState({
-    application_type: 'new', last_name: '', first_name: '', middle_name: '', age: '', sex: '', birthdate: '',
-    birth_place: '', address: '', contact_number: '', civil_status: '', number_of_dependents: 0,
-    educational_attainment: 'None', purpose_of_application: '', employment_type: 'Unemployed',
-    total_monthly_income: 0, type_of_occupancy: 'Own House', classification: '',
-    member_4ps: false, member_ip: false, member_philhealth: false, member_sss: false, member_gsis: false,
-    member_pagibig: false, comelec_registered: 'No', guardian_name: '', guardian_relation: '',
-    guardian_contact: '', zone_leader_name: '', zone_leader_contact: ''
+    application_type: 'new',
+    id_number: '',
+    expiry_date: '',
+    last_name: '',
+    first_name: '',
+    middle_name: '',
+    age: '',
+    sex: '',
+    birthdate: '',
+    birth_place: '',
+    address: '',
+    contact_number: '',
+    civil_status: '',
+    number_of_dependents: 0,
+    facebook_account: '',
+    educational_attainment: 'None',
+    purpose_of_application: '',
+    employment_type: 'Unemployed',
+    type_of_employment: '',
+    other_source_of_income: '',
+    total_monthly_income: 0,
+    type_of_occupancy: 'Own House',
+    classification: '',
+    member_4ps: false,
+    member_ip: false,
+    member_philhealth: false,
+    member_sss: false,
+    member_gsis: false,
+    member_pagibig: false,
+    comelec_registered: 'No',
+    guardian_name: '',
+    guardian_relation: '',
+    guardian_contact: '',
+    zone_leader_name: '',
+    zone_leader_contact: ''
   });
 
   const updateField = (field, value) => setFormData(prev => ({ ...prev, [field]: value }));
@@ -68,11 +96,25 @@ const Apply = () => {
             </div>
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1">Last Name *</label>
-              <input class="input-field" onInput="${e => updateField('last_name', e.target.value)} required />
+              <input class="input-field" onInput="${e => updateField('last_name', e.target.value)}" required />
             </div>
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1">First Name *</label>
-              <input class="input-field" onInput="${e => updateField('first_name', e.target.value)} required />
+              <input class="input-field" onInput="${e => updateField('first_name', e.target.value)}" required />
+            </div>
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">ID Number *</label>
+              <input class="input-field" onInput="${e => updateField('id_number', e.target.value)}" required placeholder="e.g. 123-456-789" />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Expiry Date</label>
+              <input type="date" class="input-field" onInput="${e => updateField('expiry_date', e.target.value)}" />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Middle Name</label>
+              <input class="input-field" onInput="${e => updateField('middle_name', e.target.value)}" />
             </div>
           </div>
           <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mt-4">

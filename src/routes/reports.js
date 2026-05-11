@@ -93,6 +93,75 @@ router.get('/export/excel', adminAuth, async (req, res) => {
   }
 });
 
+router.get('/export/applicants/csv', adminAuth, async (req, res) => {
+  try {
+    const { startDate, endDate, status, search } = req.query;
+
+    let queryStr = `SELECT * FROM applicants WHERE 1=1`;
+    const params = [];
+    let paramCount = 0;
+
+    if (startDate) {
+      paramCount++;
+      queryStr += ` AND created_at >= $${paramCount}`;
+      params.push(startDate);
+    }
+    if (endDate) {
+      paramCount++;
+      queryStr += ` AND created_at <= $${paramCount}`;
+      params.push(endDate);
+    }
+    if (status) {
+      paramCount++;
+      queryStr += ` AND status = $${paramCount}`;
+      params.push(status);
+    }
+    if (search) {
+      paramCount++;
+      queryStr += ` AND (first_name ILIKE $${paramCount} OR last_name ILIKE $${paramCount} OR id_number ILIKE $${paramCount})`;
+      params.push(`%${search}%`);
+    }
+
+    queryStr += ' ORDER BY created_at DESC';
+
+    const { rows: applicants } = await query(queryStr, params);
+
+    const columns = [
+      'application_type','id_number','expiry_date','last_name','first_name','middle_name','age','sex','birthdate','birth_place','address','contact_number','civil_status','number_of_dependents','facebook_account','educational_attainment','purpose_of_application','employment_type','type_of_employment','other_source_of_income','total_monthly_income','type_of_occupancy','classification',
+      'member_4ps','member_ip','member_philhealth','member_sss','member_gsis','member_pagibig','comelec_registered',
+      'guardian_name','guardian_relation','guardian_contact','zone_leader_name','zone_leader_contact',
+      'status','created_at'
+    ];
+
+    const csvEscape = (v) => {
+      if (v === null || v === undefined) return '';
+      const s = String(v);
+      if (/[",\n]/.test(s)) return `"${s.replace(/"/g,'""')}"`;
+      return s;
+    };
+
+    const header = columns.join(',');
+    const lines = applicants.map(app => {
+      return columns.map(c => {
+        let val = app[c];
+        if (typeof val === 'boolean') val = val ? 'true' : 'false';
+        if (c === 'comelec_registered' && val === null) val = 'No';
+        if (c === 'total_monthly_income' && val !== null && val !== undefined) val = val;
+        if (val === null || val === undefined) val = '';
+        return csvEscape(val);
+      }).join(',');
+    });
+
+    const csv = [header, ...lines].join('\n');
+
+    res.setHeader('Content-Type', 'text/csv');
+    res.setHeader('Content-Disposition', `attachment; filename=applicants-${new Date().toISOString().slice(0,10)}.csv`);
+    res.status(200).send(csv);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 router.get('/export/pdf', adminAuth, async (req, res) => {
   try {
     const { applicantId } = req.query;

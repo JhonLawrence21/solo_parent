@@ -10,6 +10,7 @@ import Dashboard from '../pages/Dashboard.js';
 import Apply from '../pages/Apply.js';
 import TrackApplication from '../pages/TrackApplication.js';
 import Applicants from '../pages/admin/Applicants.js';
+import ApplicantDetails from '../pages/admin/ApplicantDetails.js';
 import Users from '../pages/admin/Users.js';
 import Reports from '../pages/admin/Reports.js';
 import Layout from '../components/Layout.js';
@@ -57,6 +58,7 @@ const App = () => {
     if (route === '/dashboard' && isAdmin) return html`<${Layout}><${Dashboard} /></${Layout}>`;
     if (route === '/apply' && token) return html`<${Layout}><${Apply} /></${Layout}>`;
     if (route === '/track-application' && token) return html`<${Layout}><${TrackApplication} /></${Layout}>`;
+    if (route.startsWith('/admin/applicants/') && isAdmin) return html`<${Layout}><${ApplicantDetails} /></${Layout}>`;
     if (route === '/admin/applicants' && isAdmin) return html`<${Layout}><${Applicants} /></${Layout}>`;
     if (route === '/admin/users' && isAdmin) return html`<${Layout}><${Users} /></${Layout}>`;
     if (route === '/admin/reports' && isAdmin) return html`<${Layout}><${Reports} /></${Layout}>`;

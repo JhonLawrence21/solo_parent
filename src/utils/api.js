@@ -39,7 +39,8 @@ const api = {
     createUser: (data) => api.request('/admin/users', { method: 'POST', body: JSON.stringify(data) }),
     updateUser: (id, data) => api.request(`/admin/users/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
     deleteUser: (id) => api.request(`/admin/users/${id}`, { method: 'DELETE' }),
-    updateStatus: (id, data) => api.request(`/admin/applicants/${id}/status`, { method: 'PUT', body: JSON.stringify(data) })
+    updateStatus: (id, data) => api.request(`/admin/applicants/${id}/status`, { method: 'PUT', body: JSON.stringify(data) }),
+    exportApplicantsCSV: (params) => api.request(`/reports/export/applicants/csv?${new URLSearchParams(params || {})}`)
   },
   
   dashboard: {

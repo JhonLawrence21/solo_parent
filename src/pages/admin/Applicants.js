@@ -50,17 +50,33 @@ const Applicants = () => {
         <p class="text-gray-600">View and manage all Solo Parent applications</p>
       </div>
       <div class="card">
-        <div class="flex flex-col sm:flex-row gap-4 mb-6">
+        <div class="flex flex-col lg:flex-row lg:items-center gap-4 mb-6">
           <div class="flex-1">
             <input type="text" placeholder="Search by name or ID..." value="${search}" onInput="${e => setSearch(e.target.value)}" class="input-field" />
           </div>
-          <select value="${status}" onChange="${e => setStatus(e.target.value)}" class="input-field w-full sm:w-48">
+          <select value="${status}" onChange="${e => setStatus(e.target.value)}" class="input-field w-full sm:w-48 lg:w-48">
             <option value="">All Status</option>
             <option value="pending">Pending</option>
             <option value="approved">Approved</option>
             <option value="rejected">Rejected</option>
             <option value="under_review">Under Review</option>
           </select>
+          <div class="flex lg:justify-end">
+            <button
+              onClick="${async () => {
+                try {
+                  const params = new URLSearchParams();
+                  if (search) params.set('search', search);
+                  if (status) params.set('status', status);
+                  await api.admin.exportApplicantsCSV(params);
+                  toast.success('Export started');
+                } catch (e) {
+                  toast.error(e.message || 'Export failed');
+                }
+              }}"
+              class="btn-primary w-full lg:w-auto"
+            >Export CSV</button>
+          </div>
         </div>
         <div class="overflow-x-auto">
           <table class="w-full">
