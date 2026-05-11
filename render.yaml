@@ -1,10 +1,12 @@
 database:
+  type: psql
   name: solo-parent-db
   region: oregon
   plan: starter
 
 services:
-  - name: solo-parent-api
+  - type: web
+    name: solo-parent-api
     region: oregon
     plan: free
     buildCommand: npm install
