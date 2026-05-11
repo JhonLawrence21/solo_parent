@@ -1,4 +1,5 @@
 import pg from 'pg';
+import bcrypt from 'bcryptjs';
 const { Pool } = pg;
 
 // Fix DB_HOST - extract hostname from full URL if needed
@@ -156,7 +157,6 @@ export const initDatabase = async () => {
 
     const { rows } = await client.query(`SELECT id FROM users WHERE email = 'admin@barangay.gov.ph' LIMIT 1`);
     if (rows.length === 0) {
-      const bcrypt = await import('bcryptjs');
       const hashedPassword = await bcrypt.hash('admin123', 10);
       await client.query(
         `INSERT INTO users (email, password, role) VALUES ($1, $2, 'admin')`,
