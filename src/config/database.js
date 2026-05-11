@@ -1,8 +1,28 @@
 import pg from 'pg';
 const { Pool } = pg;
 
+// Fix DB_HOST - extract hostname from full URL if needed
+let dbHost = process.env.DB_HOST;
+if (dbHost && dbHost.includes('://')) {
+  const urlMatch = dbHost.match(/@([^:]+):(\d+)/);
+  if (urlMatch) {
+    dbHost = urlMatch[1];
+    if (process.env.DB_PORT === '5432' || !process.env.DB_PORT) {
+      process.env.DB_PORT = urlMatch[2];
+    }
+  }
+}
+
+console.log('Database config:', {
+  host: dbHost,
+  port: process.env.DB_PORT,
+  database: process.env.DB_NAME,
+  user: process.env.DB_USER,
+  ssl: process.env.DB_SSL
+});
+
 const pool = new Pool({
-  host: process.env.DB_HOST,
+  host: dbHost,
   port: parseInt(process.env.DB_PORT) || 5432,
   user: process.env.DB_USER,
   password: process.env.DB_PASSWORD,
