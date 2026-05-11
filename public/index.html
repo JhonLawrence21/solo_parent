@@ -4,8 +4,6 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Barangay Solo Parent Information System</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
@@ -13,8 +11,8 @@
       theme: {
         extend: {
           colors: {
-            primary: { 50: '#eff6ff', 100: '#dbeafe', 200: '#bfdbfe', 300: '#93c5fd', 400: '#60a5fa', 500: '#3b82f6', 600: '#2563eb', 700: '#1d4ed8', 800: '#1e40af', 900: '#1e3a8a' },
-            secondary: { 50: '#fefce8', 100: '#fef9c3', 200: '#fef08a', 300: '#fde047', 400: '#facc15', 500: '#eab308', 600: '#ca8a04', 700: '#a16207' }
+            primary: { 600: '#2563eb', 700: '#1d4ed8' },
+            secondary: { 500: '#eab308', 600: '#ca8a04' }
           }
         }
       }
@@ -22,25 +20,272 @@
   </script>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: 'Inter', system-ui, sans-serif; }
-    .card { background: white; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); padding: 24px; transition: all 0.3s; }
-    .card:hover { box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1); }
-    .btn-primary { background: #2563eb; color: white; padding: 10px 24px; border-radius: 8px; font-weight: 500; transition: all 0.2s; }
-    .btn-primary:hover { background: #1d4ed8; box-shadow: 0 4px 12px rgba(37,99,235,0.3); }
-    .btn-secondary { background: #eab308; color: white; padding: 10px 24px; border-radius: 8px; font-weight: 500; transition: all 0.2s; }
-    .btn-secondary:hover { background: #ca8a04; }
-    .btn-outline { border: 2px solid #2563eb; color: #2563eb; padding: 10px 24px; border-radius: 8px; font-weight: 500; transition: all 0.2s; }
-    .btn-outline:hover { background: #2563eb; color: white; }
-    .input-field { width: 100%; padding: 10px 16px; border: 1px solid #d1d5db; border-radius: 8px; outline: none; transition: all 0.2s; }
-    .input-field:focus { border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59,130,246,0.1); }
-    .animate-fade-in { animation: fadeIn 0.5s ease-out; }
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-    .animate-slide-up { animation: slideUp 0.5s ease-out; }
-    @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+    body { font-family: system-ui, -apple-system, sans-serif; }
   </style>
 </head>
 <body class="bg-gray-50">
-  <div id="app"></div>
-  <script type="module" src="/src/components/App.js"></script>
+  <div id="app">
+    <div class="min-h-screen flex items-center justify-center">
+      <div class="text-center">
+        <div class="w-16 h-16 bg-blue-600 rounded-full flex items-center justify-center mx-auto mb-4">
+          <span class="text-white font-bold text-2xl">SP</span>
+        </div>
+        <h1 class="text-2xl font-bold text-gray-800 mb-2">Solo Parent Information System</h1>
+        <p class="text-gray-600 mb-4">Loading...</p>
+        <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-600 mx-auto"></div>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { render, h, Fragment } from 'https://esm.sh/preact@10.19.3';
+    import { useState, useEffect } from 'https://esm.sh/preact@10.19.3/hooks';
+    import htm from 'https://esm.sh/htm@3.1.1';
+
+    const html = htm.bind(h);
+
+    const api = {
+      async request(endpoint, options = {}) {
+        const res = await fetch('/api' + endpoint, options);
+        return res.json();
+      },
+      auth: {
+        login: (data) => api.request('/auth/login', { method: 'POST', body: JSON.stringify(data) }),
+        register: (data) => api.request('/auth/register', { method: 'POST', body: JSON.stringify(data) }),
+        me: () => api.request('/auth/me')
+      },
+      applicants: {
+        create: (data) => api.request('/applicants', { method: 'POST', body: JSON.stringify(data) }),
+        getAll: () => api.request('/applicants')
+      },
+      dashboard: { getStats: () => api.request('/dashboard') }
+    };
+
+    const Toast = ({ message, type }) => {
+      if (!message) return null;
+      const colors = { success: 'bg-green-500', error: 'bg-red-500', loading: 'bg-blue-500' };
+      return html`<div class="fixed top-4 right-4 px-4 py-3 rounded-lg text-white ${colors[type] || 'bg-gray-500'} z-50">${message}</div>`;
+    };
+
+    const Home = () => html`
+      <div>
+        <header class="bg-white shadow-sm sticky top-0 z-50">
+          <nav class="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <div class="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center">
+                <span class="text-white font-bold text-lg">SP</span>
+              </div>
+              <div>
+                <h1 class="font-bold text-gray-800">Solo Parent</h1>
+                <p class="text-xs text-gray-500">Barangay System</p>
+              </div>
+            </div>
+            <div class="flex items-center gap-4">
+              <a href="/login" class="text-gray-600 hover:text-blue-600 font-medium">Login</a>
+              <a href="/register" class="btn-primary text-sm px-4 py-2">Apply Now</a>
+            </div>
+          </nav>
+        </header>
+
+        <section class="bg-gradient-to-br from-blue-600 to-blue-800 text-white py-20">
+          <div class="max-w-4xl mx-auto px-4 text-center">
+            <h1 class="text-4xl font-bold mb-4">Barangay Solo Parent <span class="text-yellow-400">Information System</span></h1>
+            <p class="text-lg text-blue-100 mb-8">Apply for Solo Parent ID online, track your application status, and access government benefits.</p>
+            <a href="/register" class="btn-secondary inline-flex items-center gap-2 text-lg px-8 py-3">Apply Now →</a>
+          </div>
+        </section>
+
+        <section class="py-16 bg-white">
+          <div class="max-w-4xl mx-auto px-4 text-center">
+            <h2 class="text-3xl font-bold text-gray-800 mb-8">Requirements</h2>
+            <div class="grid md:grid-cols-3 gap-6">
+              ${['Valid ID', 'Barangay Certificate', 'Birth Certificate', '2x2 Photo', 'Supporting Docs', 'Application Form'].map(req => html`
+                <div class="bg-gray-50 rounded-lg p-4 flex items-center gap-3">
+                  <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center text-blue-600">✓</div>
+                  <span>${req}</span>
+                </div>
+              `)}
+            </div>
+          </div>
+        </section>
+
+        <footer class="bg-gray-900 text-white py-8 text-center">
+          <p class="text-gray-400">© ${new Date().getFullYear()} Barangay Solo Parent Information System</p>
+        </footer>
+      </div>
+    `;
+
+    const Login = () => {
+      const [email, setEmail] = useState('');
+      const [password, setPassword] = useState('');
+      const [error, setError] = useState('');
+      const [loading, setLoading] = useState(false);
+
+      const handleSubmit = async (e) => {
+        e.preventDefault();
+        setLoading(true);
+        setError('');
+        try {
+          const data = await api.auth.login({ email, password });
+          localStorage.setItem('token', data.token);
+          localStorage.setItem('user', JSON.stringify(data.user));
+          window.location.href = data.user.role === 'applicant' ? '/apply' : '/dashboard';
+        } catch (err) {
+          setError(err.error || 'Login failed');
+        } finally {
+          setLoading(false);
+        }
+      };
+
+      return html`
+        <div class="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+          <div class="bg-white rounded-xl shadow-lg p-8 w-full max-w-md">
+            <div class="text-center mb-6">
+              <div class="w-16 h-16 bg-blue-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                <span class="text-white font-bold text-2xl">SP</span>
+              </div>
+              <h1 class="text-2xl font-bold">Welcome Back</h1>
+            </div>
+            ${error && html`<div class="bg-red-100 text-red-700 px-4 py-2 rounded-lg mb-4">${error}</div>`}
+            <form onSubmit="${handleSubmit}" class="space-y-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                <input type="email" value="${email}" onInput="${e => setEmail(e.target.value)}" class="w-full px-4 py-2 border rounded-lg" required />
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Password</label>
+                <input type="password" value="${password}" onInput="${e => setPassword(e.target.value)}" class="w-full px-4 py-2 border rounded-lg" required />
+              </div>
+              <button type="submit" disabled="${loading}" class="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 font-medium ${loading ? 'opacity-50' : ''}">
+                ${loading ? 'Loading...' : 'Sign In'}
+              </button>
+            </form>
+            <p class="mt-4 text-center text-gray-600">Don't have an account? <a href="/register" class="text-blue-600">Register</a></p>
+          </div>
+        </div>
+      `;
+    };
+
+    const Register = () => {
+      const [email, setEmail] = useState('');
+      const [password, setPassword] = useState('');
+      const [error, setError] = useState('');
+      const [loading, setLoading] = useState(false);
+
+      const handleSubmit = async (e) => {
+        e.preventDefault();
+        setLoading(true);
+        setError('');
+        try {
+          const data = await api.auth.register({ email, password, confirmPassword: password });
+          localStorage.setItem('token', data.token);
+          localStorage.setItem('user', JSON.stringify(data.user));
+          window.location.href = '/apply';
+        } catch (err) {
+          setError(err.error || 'Registration failed');
+        } finally {
+          setLoading(false);
+        }
+      };
+
+      return html`
+        <div class="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+          <div class="bg-white rounded-xl shadow-lg p-8 w-full max-w-md">
+            <div class="text-center mb-6">
+              <div class="w-16 h-16 bg-blue-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                <span class="text-white font-bold text-2xl">SP</span>
+              </div>
+              <h1 class="text-2xl font-bold">Create Account</h1>
+            </div>
+            ${error && html`<div class="bg-red-100 text-red-700 px-4 py-2 rounded-lg mb-4">${error}</div>`}
+            <form onSubmit="${handleSubmit}" class="space-y-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                <input type="email" value="${email}" onInput="${e => setEmail(e.target.value)}" class="w-full px-4 py-2 border rounded-lg" required />
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Password</label>
+                <input type="password" value="${password}" onInput="${e => setPassword(e.target.value)}" class="w-full px-4 py-2 border rounded-lg" minLength="6" required />
+              </div>
+              <button type="submit" disabled="${loading}" class="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 font-medium ${loading ? 'opacity-50' : ''}">
+                ${loading ? 'Loading...' : 'Create Account'}
+              </button>
+            </form>
+            <p class="mt-4 text-center text-gray-600">Already have an account? <a href="/login" class="text-blue-600">Login</a></p>
+          </div>
+        </div>
+      `;
+    };
+
+    const Dashboard = () => {
+      const [stats, setStats] = useState(null);
+      const [loading, setLoading] = useState(true);
+
+      useEffect(() => {
+        api.dashboard.getStats().then(data => { setStats(data); setLoading(false); }).catch(() => setLoading(false));
+      }, []);
+
+      return html`
+        <div class="min-h-screen bg-gray-50">
+          <header class="bg-white shadow-sm px-6 py-4 flex items-center justify-between">
+            <h1 class="text-xl font-bold">Solo Parent Dashboard</h1>
+            <a href="/" onClick="${() => { localStorage.clear(); window.location.href = '/'; }}" class="text-red-600 hover:text-red-700">Logout</a>
+          </header>
+          <main class="max-w-6xl mx-auto p-6">
+            <h2 class="text-2xl font-bold mb-6">Overview</h2>
+            ${loading ? html`<div class="text-center py-12">Loading...</div>` : html`
+              <div class="grid grid-cols-2 md:grid-cols-4 gap-6 mb-8">
+                ${[['Total', stats?.overview?.total || 0, 'bg-blue-500'], ['Approved', stats?.overview?.approved || 0, 'bg-green-500'], ['Pending', stats?.overview?.pending || 0, 'bg-yellow-500'], ['Rejected', stats?.overview?.rejected || 0, 'bg-red-500']].map(([title, val, color]) => html`
+                  <div class="bg-white rounded-xl shadow p-6">
+                    <p class="text-sm text-gray-500">${title}</p>
+                    <p class="text-3xl font-bold ${color.replace('bg-', 'text-')}">${val}</p>
+                  </div>
+                `)}
+              </div>
+              <div class="bg-white rounded-xl shadow p-6">
+                <h3 class="font-bold mb-4">Recent Applications</h3>
+                <div class="overflow-x-auto">
+                  <table class="w-full text-left">
+                    <thead><tr class="text-gray-500 text-sm"><th class="pb-2">Name</th><th class="pb-2">Classification</th><th class="pb-2">Status</th></tr></thead>
+                    <tbody>
+                      ${(stats?.recentApplications || []).map(app => html`
+                        <tr class="border-t"><td class="py-2">${app.last_name}, ${app.first_name}</td><td>${app.classification}</td><td><span class="px-2 py-1 rounded-full text-xs ${app.status === 'approved' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}">${app.status}</span></td></tr>
+                      `)}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            `}
+          </main>
+        </div>
+      `;
+    };
+
+    const App = () => {
+      const [user, setUser] = useState(null);
+      const [loading, setLoading] = useState(true);
+      const path = window.location.pathname;
+
+      useEffect(() => {
+        const token = localStorage.getItem('token');
+        if (token) {
+          api.auth.me().then(setUser).catch(() => { localStorage.removeItem('token'); localStorage.removeItem('user'); }).finally(() => setLoading(false));
+        } else {
+          setLoading(false);
+        }
+      }, []);
+
+      if (loading) {
+        return html`<div class="min-h-screen flex items-center justify-center"><div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div></div>`;
+      }
+
+      if (path === '/login') return html`<${Login} />`;
+      if (path === '/register') return html`<${Register} />`;
+      if (path === '/dashboard') return html`<${Dashboard} />`;
+      return html`<${Home} />`;
+    };
+
+    render(html`<${App} />`, document.getElementById('app'));
+  </script>
 </body>
 </html>
