@@ -1,45 +1,72 @@
 {
-  "name": "solo-parent-system",
-  "region": " oregon",
-  "database": {
-    "regions": ["oregon", "us-east", "eu-west"],
-    "plans": {
-      "starter": {
-        "name": "Starter",
-        "price": 5,
-        "databaseSizeGb": 1,
-        "connectionLimit": 5
-      },
-      " hobby": {
-        "name": "Hobby",
-        "price": 10,
-        "databaseSizeGb": 10,
-        "connectionLimit": 20
-      }
-    }
-  },
-  "services": [
+  "resources": [
     {
-      "name": "solo-parent-api",
-      "type": "web-service",
-      "region": "oregon",
-      "plan": "starter",
-      "buildCommand": "npm install",
-      "startCommand": "npm start",
-      "healthCheckPath": "/api/health",
-      "envVars": [
-        {
-          "key": "NODE_ENV",
-          "value": "production"
-        }
-      ],
-      "dependencies": [
-        {
-          "name": "solo-parent-db",
-          "type": "postgres",
-          "plan": "starter"
-        }
-      ]
+      "kind": "psql",
+      "spec": {
+        "name": "solo-parent-db",
+        "region": "oregon",
+        "plan": "starter"
+      }
+    },
+    {
+      "kind": "web",
+      "spec": {
+        "name": "solo-parent-api",
+        "region": "oregon",
+        "plan": "free",
+        "buildCommand": "npm install",
+        "startCommand": "npm start",
+        "healthCheckPath": "/api/health",
+        "envVars": [
+          {
+            "key": "NODE_ENV",
+            "value": "production"
+          },
+          {
+            "key": "DB_HOST",
+            "fromDatabase": {
+              "name": "solo-parent-db",
+              "envVarKey": "DB_HOST"
+            }
+          },
+          {
+            "key": "DB_PORT",
+            "fromDatabase": {
+              "name": "solo-parent-db",
+              "envVarKey": "DB_PORT"
+            }
+          },
+          {
+            "key": "DB_USER",
+            "fromDatabase": {
+              "name": "solo-parent-db",
+              "envVarKey": "DB_USER"
+            }
+          },
+          {
+            "key": "DB_PASSWORD",
+            "fromDatabase": {
+              "name": "solo-parent-db",
+              "envVarKey": "DB_PASSWORD"
+            }
+          },
+          {
+            "key": "DB_NAME",
+            "fromDatabase": {
+              "name": "solo-parent-db",
+              "envVarKey": "DB_NAME"
+            }
+          },
+          {
+            "key": "DB_SSL",
+            "value": "true"
+          },
+          {
+            "key": "JWT_SECRET",
+            "generateValue": true
+          }
+        ]
+      }
     }
   ]
 }

@@ -86,12 +86,7 @@ The database tables will be created automatically on first run. If you need to r
 2. Click on "PSQL Console"
 3. Run the SQL commands from `database/schema.sql`
 
-## Default Admin Login
 
-- **Email**: admin@barangay.gov.ph
-- **Password**: admin123
-
-**Important**: Change this password immediately after first login!
 
 ## API Endpoints
 
